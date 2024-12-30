@@ -6,8 +6,8 @@ const startButton = document.getElementById("start-button");
 let ironMan, scoreboard;
 let ironManY,
   score,
-  villainsCount = 0;
-let gameRunning = false;
+  villainsCount = 0,
+  gameRunning = false;
 
 // Start the game
 function startGame() {
@@ -36,34 +36,52 @@ function initializeGame() {
 
   // Initialize score
   score = 0;
-  villainsCount = 0; // Reset the villain counter
+  updateScore(0); // Initialize the scoreboard
 }
 
-// Function to move Iron Man up or down
+// Function to update the score
+function updateScore(points) {
+  score += points;
+  scoreboard.textContent = `Score: ${score}`;
+}
+
+// Function to move Iron Man up, down, left, or right
 document.addEventListener("keydown", (event) => {
   if (!gameRunning) return; // Ignore key presses if the game is not running
 
+  // Get Iron Man's current positions
+  let ironManTop = parseInt(ironMan.style.top, 10) || 0; // Vertical position
+  let ironManLeft = parseInt(ironMan.style.left, 10) || 0; // Horizontal position
+
   if (event.key === "ArrowUp") {
-    ironManY = Math.max(ironManY - 20, 0); // Move up, stay within bounds
+    // Move up
+    ironManTop = Math.max(ironManTop - 20, 0); // Stay within bounds
   } else if (event.key === "ArrowDown") {
-    ironManY = Math.min(ironManY + 20, gameContainer.clientHeight - 350); // Move down, stay within bounds
+    // Move down
+    ironManTop = Math.min(ironManTop + 20, gameContainer.clientHeight - 100); // Stay within bounds
+  } else if (event.key === "ArrowLeft") {
+    // Move left
+    ironManLeft = Math.max(ironManLeft - 20, 0); // Stay within bounds
+  } else if (event.key === "ArrowRight") {
+    // Move right
+    ironManLeft = Math.min(ironManLeft + 20, gameContainer.clientWidth - 100); // Stay within bounds
   }
-  ironMan.style.top = `${ironManY}px`;
+
+  // Update Iron Man's position
+  ironMan.style.top = `${ironManTop}px`;
+  ironMan.style.left = `${ironManLeft}px`;
 });
 
-// Function to spawn villains at a 6-second interval
+// Function to spawn villains at intervals
 function spawnVillains() {
   const interval = setInterval(() => {
-    if (villainsCount >= 20) {
-      clearInterval(interval); // Stop spawning after 20 villains
+    if (!gameRunning) {
+      clearInterval(interval);
       return;
     }
 
-    if (gameRunning) {
-      createVillain(); // Create a new villain
-      villainsCount++;
-    }
-  }, 6000); // 6 seconds
+    createVillain(); // Create a new villain
+  }, 6000); // Spawn a villain every 6 seconds
 }
 
 // Function to create a villain
@@ -71,36 +89,53 @@ function createVillain() {
   const villain = document.createElement("div");
   villain.classList.add("villain");
 
-  // Alternate between two villain images
-  const villainImage =
-    villainsCount % 2 === 0
-      ? "./assets/villain/part_1/vil1.png"
-      : "./assets/villain/part_1/vil2.png";
-  villain.style.background = `url('${villainImage}') no-repeat center/contain`;
-
-  // Set the Y position of the villain between 10px and 300px
-
-  villain.style.left = `${gameContainer.clientWidth}px`; // Start from the right edge
+  // Random Y position
+  const randomY = Math.random() * (gameContainer.clientHeight - 80); // Villain height is 80px
+  villain.style.top = `${randomY}px`;
+  villain.style.right = `0px`; // Start from the right edge
+  villain.style.background =
+    "url('./assets/villain/part_1/vil1.png') no-repeat center/contain";
   gameContainer.appendChild(villain);
 
   moveVillain(villain); // Start moving the villain
 }
 
-// Function to move the villain from right to left
+// Function to move the villain from left to right
 function moveVillain(villain) {
-  let positionX = gameContainer.clientWidth; // Start from the right edge
-  villain.style.left = `${positionX}px`;
+  let positionX = 0;
 
   const interval = setInterval(() => {
-    positionX -= 5; // Move 5px to the left per frame
-    villain.style.left = `${positionX}px`;
+    positionX += 5; // Move 5px per frame
+    villain.style.right = `${positionX}px`;
+
+    // Check for collision with Iron Man
+    if (isColliding(ironMan, villain)) {
+      updateScore(-5); // Reduce score on collision
+      villain.remove();
+      clearInterval(interval);
+      return;
+    }
 
     // Remove villain if it goes out of bounds
-    if (positionX < -100) {
+    if (positionX > gameContainer.clientWidth) {
+      updateScore(10); // Add score for avoiding the villain
       villain.remove();
       clearInterval(interval);
     }
   }, 50); // Move every 50ms
+}
+
+// Function to check collision between two elements
+function isColliding(el1, el2) {
+  const rect1 = el1.getBoundingClientRect();
+  const rect2 = el2.getBoundingClientRect();
+
+  return !(
+    rect1.top > rect2.bottom ||
+    rect1.bottom < rect2.top ||
+    rect1.left > rect2.right ||
+    rect1.right < rect2.left
+  );
 }
 
 // Add event listener to the start button
