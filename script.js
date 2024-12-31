@@ -3,11 +3,13 @@ const gameContainer = document.getElementById("game-container");
 const startButton = document.getElementById("start-button");
 
 // Game elements
-let ironMan, scoreboard;
+let ironMan, lifeboard, scoreboard, gameOverModal, restartButton;
 let ironManY,
+  life,
   score,
   villainsCount = 0,
-  gameRunning = false;
+  gameRunning = false,
+  villainSpeed = 5; // Initial speed of villains
 
 // Start the game
 function startGame() {
@@ -15,6 +17,7 @@ function startGame() {
   startButton.style.display = "none"; // Hide the start button
   initializeGame(); // Initialize game elements
   spawnVillains(); // Start spawning villains
+  increaseVillainSpeed(); // Start increasing speed every 10 seconds
 }
 
 // Initialize the game
@@ -25,6 +28,12 @@ function initializeGame() {
   scoreboard.textContent = "Score: 0"; // Initial score
   gameContainer.appendChild(scoreboard);
 
+  // Create Lifeboard
+  lifeboard = document.createElement("div");
+  lifeboard.classList.add("lifeboard");
+  lifeboard.textContent = "Life: 3"; // Initial life count
+  gameContainer.appendChild(lifeboard);
+
   // Create Iron Man
   ironMan = document.createElement("div");
   ironMan.classList.add("iron-man");
@@ -33,16 +42,29 @@ function initializeGame() {
   // Set Iron Man's initial position
   ironManY = gameContainer.clientHeight / 2; // Start in the middle
   ironMan.style.top = `${ironManY}px`;
+  ironMan.style.left = `50px`; // Start near the left edge
 
-  // Initialize score
+  // Initialize score and life
   score = 0;
+  life = 3;
   updateScore(0); // Initialize the scoreboard
+  updateLife(0); // Initialize the lifeboard
 }
 
 // Function to update the score
 function updateScore(points) {
   score += points;
   scoreboard.textContent = `Score: ${score}`;
+}
+
+// Function to update the life count
+function updateLife(change) {
+  life += change; // Update life count
+  lifeboard.textContent = `Life: ${life}`; // Update lifeboard display
+
+  if (life <= 0) {
+    endGame(); // End the game if life reaches 0
+  }
 }
 
 // Function to move Iron Man up, down, left, or right
@@ -81,7 +103,7 @@ function spawnVillains() {
     }
 
     createVillain(); // Create a new villain
-  }, 6000); // Spawn a villain every 6 seconds
+  }, 2000); // Spawn a villain every 2 seconds
 }
 
 // Function to create a villain
@@ -105,12 +127,12 @@ function moveVillain(villain) {
   let positionX = 0;
 
   const interval = setInterval(() => {
-    positionX += 5; // Move 5px per frame
+    positionX += villainSpeed; // Move based on the current villain speed
     villain.style.right = `${positionX}px`;
 
     // Check for collision with Iron Man
     if (isColliding(ironMan, villain)) {
-      updateScore(-5); // Reduce score on collision
+      updateLife(-1); // Reduce life on collision
       villain.remove();
       clearInterval(interval);
       return;
@@ -136,6 +158,39 @@ function isColliding(el1, el2) {
     rect1.left > rect2.right ||
     rect1.right < rect2.left
   );
+}
+
+// Function to end the game
+function endGame() {
+  gameRunning = false;
+  showGameOverModal();
+}
+
+// Function to display a game over modal
+function showGameOverModal() {
+  const modal = document.createElement("div");
+  modal.classList.add("game-over-modal");
+  modal.innerHTML = `
+    <h2>Game Over</h2>
+    <p>Your Score: ${score}</p>
+    <button id="restart-button">Restart</button>
+  `;
+  document.body.appendChild(modal);
+
+  const restartButton = document.getElementById("restart-button");
+  restartButton.addEventListener("click", () => {
+    location.reload(); // Reload the page to restart the game
+  });
+}
+
+// Function to increase villain speed every 30 seconds
+function increaseVillainSpeed() {
+  setInterval(() => {
+    if (gameRunning) {
+      villainSpeed += 5; // Increase speed by 5
+      console.log(`Villain speed increased to: ${villainSpeed}`);
+    }
+  }, 10000); // Every 10 seconds
 }
 
 // Add event listener to the start button
