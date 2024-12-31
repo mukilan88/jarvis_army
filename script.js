@@ -53,8 +53,10 @@ function initializeGame() {
 
 // Function to update the score
 function updateScore(points) {
-  score += points;
-  scoreboard.textContent = `Score: ${score}`;
+  if (life > 0) {
+    score += points;
+    scoreboard.textContent = `Score: ${score}`;
+  }
 }
 
 // Function to update the life count
@@ -68,7 +70,7 @@ function updateLife(change) {
 }
 
 // Function to move Iron Man up, down, left, or right
-document.addEventListener("keydown", (event) => {
+function handleIronManMovement(event) {
   if (!gameRunning) return; // Ignore key presses if the game is not running
 
   // Get Iron Man's current positions
@@ -92,7 +94,10 @@ document.addEventListener("keydown", (event) => {
   // Update Iron Man's position
   ironMan.style.top = `${ironManTop}px`;
   ironMan.style.left = `${ironManLeft}px`;
-});
+}
+
+// Attach the movement event listener
+document.addEventListener("keydown", handleIronManMovement);
 
 // Function to spawn villains at intervals
 function spawnVillains() {
@@ -122,7 +127,7 @@ function createVillain() {
   moveVillain(villain); // Start moving the villain
 }
 
-// Function to move the villain from left to right
+// Function to move the villain from right to left
 function moveVillain(villain) {
   let positionX = 0;
 
@@ -163,6 +168,17 @@ function isColliding(el1, el2) {
 // Function to end the game
 function endGame() {
   gameRunning = false;
+
+  // Clear all running intervals
+  const highestIntervalId = setInterval(() => {}, 0);
+  for (let i = 0; i <= highestIntervalId; i++) {
+    clearInterval(i);
+  }
+
+  // Remove event listener
+  document.removeEventListener("keydown", handleIronManMovement);
+
+  // Show the game over modal
   showGameOverModal();
 }
 
@@ -179,11 +195,11 @@ function showGameOverModal() {
 
   const restartButton = document.getElementById("restart-button");
   restartButton.addEventListener("click", () => {
-    location.reload(); // Reload the page to restart the game
+    window.location.reload(); // Reload the page to restart the game
   });
 }
 
-// Function to increase villain speed every 30 seconds
+// Function to increase villain speed every 10 seconds
 function increaseVillainSpeed() {
   setInterval(() => {
     if (gameRunning) {
