@@ -187,9 +187,10 @@ function showGameOverModal() {
   const modal = document.createElement("div");
   modal.classList.add("game-over-modal");
   modal.innerHTML = `
-    <h2>Aval than muduchutiga ponga</h2>
+    <h2>Thothukitte Irukiye da</h2>
+    <h2>Avalo than namala muduchuvitinga ponga</h2>
     <p>Your Score: ${score}</p>
-    <button id="restart-button">Irunga Bhai</button>
+    <button id="restart-button">Irunga Bhai!!</button>
   `;
   document.body.appendChild(modal);
 
