@@ -7,9 +7,9 @@ Welcome to the Javis Army Game! This is a browser-based game where you control I
 . Click the Start button to begin.
 2. Controls:
 - Use the Arrow Keys to move Iron Man:
--- Up Arrow: Move Up.
--- Down Arrow: Move Down.
--- Left Arrow: Move Left.
+-- Up Arrow: Move Up. \
+-- Down Arrow: Move Down. \
+-- Left Arrow: Move Left. \
 -- Right Arrow: Move Right.
 
 ### Objective:
